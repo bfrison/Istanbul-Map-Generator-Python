@@ -1,5 +1,5 @@
-import functools, random, sys
-import tkinter as ti
+#!/usr/bin/env python3
+import argparse, random, sys
 
 FOUNTAIN = 7
 BLACK_MARKET = 8
@@ -7,11 +7,13 @@ TEA_HOUSE = 9
 
 class IstanbulMap():
     def __init__(self, game_version):
-        if game_version.upper() == "ORIGINAL":
+        if game_version.upper() == 'ORIGINAL':
+            self.game_version = 'Original'
             self.map_size = 16
             self.num_col = 4
             self.acceptable_fountain_positions = [5, 6, 9, 10]
         elif game_version.upper() == 'MOCHA_BAKSHEESH':
+            self.game_version = 'Mocha & Baksheesh'
             self.map_size = 20
             self.num_col = 5
             self.acceptable_fountain_positions = [6, 7, 8, 11, 12, 13]
@@ -56,27 +58,19 @@ class IstanbulMap():
         for row_num in range(int(self.map_size/self.num_col)):
             yield self.get_row(row_num)
 
-    #This method is used to print the tiles list for testing:
     def printMap(self, output=sys.stdout):
+        print('Istanbul Map {}'.format(self.game_version), file=output)
         for row in self.get_rows():
             print(*row,sep='\t',file=output)
 
-def create_GUI():
-    root = ti.Tk()
-    root.v = ti.StringVar(root)
-    root.v.set('original')
-    ti.Label(master=root,text='Select Game Version:').grid(row=0,sticky=ti.W)
-    ti.Radiobutton(master=root,text='Original',variable=root.v,value='original',state=ti.ACTIVE).grid(row=1,sticky=ti.W)
-    ti.Radiobutton(master=root,text='Mocha & Baksheesh',variable=root.v,value='mocha_baksheesh',state=ti.NORMAL).grid(row=2,sticky=ti.W)
-    ti.Button(master=root,text='Generate Map',command=functools.partial(display_map,root)).grid(row=3)
-    return root
-
-def display_map(root):
-    if root.v.get():
-        im = IstanbulMap(root.v.get())
-        tk_map = ti.Tk()
-        for row_num, row in enumerate(im.get_rows()):
-            for col_num, val in enumerate(row):
-                label = ti.Label(master=tk_map,text=val,padx=10,pady=10)
-                label.grid(column=col_num,row=row_num)
-        return tk_map
+parser = argparse.ArgumentParser()
+parser.add_argument("game_version", default='O', nargs='?')
+parser.add_argument('-o', '--output', type=argparse.FileType('w'))
+args = parser.parse_args()
+v = args.game_version
+if v.upper() == 'O':
+    im = IstanbulMap('ORIGINAL')
+    im.printMap(output=args.output)
+elif v.upper() == 'M':
+    im = IstanbulMap('MOCHA_BAKSHEESH')
+    im.printMap(output=args.output)
